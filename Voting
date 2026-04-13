@@ -1,0 +1,3 @@
+n=int(input("Enter your age:"))
+result="Eligible to vote" if n>=18 else "Not Eligible"
+print(result)
