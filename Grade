@@ -1,0 +1,4 @@
+mark=int(input("Enter Your Marks:"))
+result="Grade A"if mark >= 90 else "grade b" if mark>=75 else "grade c" if mark>=60 else "grade d"
+print(result)
+
