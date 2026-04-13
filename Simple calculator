@@ -1,0 +1,19 @@
+n1=int(input("Enter Number 1:"))
+n2=int(input("Enter Number 2:"))
+print("__ARITHMETIC CALC__\n1.Addition(+)\n2.Subtraction(-)\n3.Multiplication(*)\n4.Division(/)")
+ch=int(input("Enter Your Choice:"))
+match ch:
+   case 1:
+      print("Addition:",n1+n2)
+
+   case 2:
+      print("Subtraction:",n1-n2)
+
+   case 3:
+      print("Multiply:",n1*n2)
+
+   case 4:
+      print("Division:",n1/n2)
+   case _:
+      print("Enter Valid Input")
+
