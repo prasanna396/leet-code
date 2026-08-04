@@ -1,0 +1,36 @@
+class Solution(object):
+    def permuteUnique(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: List[List[int]]
+        """
+        res = []
+        path = []
+        
+        counter = {}
+        for num in nums:
+            counter[num] = counter.get(num, 0) + 1
+            
+        def backtrack():
+
+            if len(path) == len(nums):
+                res.append(list(path)) 
+                return
+            
+           
+            for num in counter:
+                if counter[num] > 0:
+                    
+                    path.append(num)
+                    counter[num] -= 1
+                    
+                    
+                    backtrack()
+                    
+                    
+                    counter[num] += 1
+                    path.pop()
+                    
+       
+        backtrack()
+        return res
