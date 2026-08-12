@@ -1,0 +1,131 @@
+Script started on Wednesday 29 July 2026 04:06:56 PM IST
+[24bcs055@mepcolinux ex2]$cat q1.c
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main() {
+   int fd[2];
+   pid_t pid;
+   // Fix 1: Use char array (or char*) for strings, not a single char
+   char write_msg[] = "Hello From Parent"; 
+   char read_msg[100];
+   // Fix 2: Declare bytes_read outside the if block so it is accessible later
+   int bytes_read = 0; 
+
+   if (pipe(fd) == -1) {
+      perror("pipe creation failed");
+      return 1;
+   }
+
+   pid = fork();
+   if (pid < 0) {
+      perror("Fork failed");
+      return 1;
+   }
+
+   if (pid == 0) {
+      // Child process reads from the pipe
+      close(fd[1]); // Close unused write end
+      bytes_read = read(fd[0], read_msg, sizeof(read_msg) - 1);
+      
+      if (bytes_read > 0) {
+         // Fix 3: Use the proper null-terminator character '\0'
+         read_msg[bytes_read] = '\0'; 
+         printf("child received: %s\n", read_msg);
+      }
+      close(fd[0]); // Fix 4: Corrected syntax close(fd[0])
+   } 
+   else {
+      // Parent process writes to the pipe
+      close(fd[0]); // Close unused read end
+      printf("parent sending: %s\n", write_msg);
+      // Fix 5: Pass the required buffer and size to the write function
+      write(fd[1], write_msg, strlen(write_msg));
+      close(fd[1]);
+      wait(NULL); // Wait for child to finish
+   }
+
+   return 0;
+}
+
+[24bcs055@mepcolinux ex2]$./q1
+parent sending: Hello From Parent
+child received: Hello From Parent
+[24bcs055@mepcolinux ex2]$cat q2.c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int findgcd(int a, int b) {
+   while (b != 0) {
+      int temp = b;
+      b = a % b; // Fix 1: Properly using 'b' ensures no modulo-by-zero crash
+      a = temp;
+   }
+   return a;
+}
+
+int main() {
+   int fd[2];
+   int lcm;
+   
+   if (pipe(fd) == -1) {
+      perror("Pipe failed");
+      return 1;
+   }
+   
+   if (fork() == 0) {
+      close(fd[0]); // Close unused read end
+      
+      int child_arr[2]; // Fix 2: Explicit array allocation
+      printf("Enter two numbers: ");
+      for (int i = 0; i < 2; i++) {
+         if (scanf("%d", &child_arr[i]) != 1) {
+            return 1; 
+         }
+      }
+      
+      write(fd[1], child_arr, 2 * sizeof(int));
+      close(fd[1]); // Close write end after sending
+   }
+   else {
+      close(fd[1]); // Close unused write end
+      
+      int parent_arr[2]; // Fix 3: Explicit array allocation
+      read(fd[0], parent_arr, 2 * sizeof(int));
+      close(fd[0]); // Close read end after reading
+      
+      int a = parent_arr[0];
+      int b = parent_arr[1];
+      
+      // Prevent division by zero if both inputs are 0
+      if (a == 0 && b == 0) {
+         printf("LCM = 0\n");
+      } else {
+         lcm = (a * b) / findgcd(a, b);
+         printf("LCM = %d\n", lcm);
+      }
+      
+      wait(NULL); // Clean up the child process
+   }
+   return 0;
+}
+
+[24bcs055@mepcolinux ex2]$./q2
+Enter two numbers: 8 4
+LCM = 8
+[24bcs055@mepcolinux ex2]$./q3
+Enter the number of elements in the array: 5
+Enter 5 integers separated by spaces:
+2 3 4 5 6
+
+[P2] Successfully read 2 odd numbers from pipe.
+[P2] Array content: 3 5 
+[P3] The second maximum value is: 3
+[24bcs055@mepcolinux ex2]$exit
+exit
+
+Script done on Wednesday 29 July 2026 04:07:44 PM IST
